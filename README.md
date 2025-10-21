@@ -1,319 +1,123 @@
 # KonaAI SSMS MCP Server
 
-A Model Context Protocol (MCP) server that provides programmatic access to KonaAI SQL Server databases with full CRUD operations on tables, triggers, stored procedures, and views.
+A comprehensive Model Context Protocol (MCP) server for SQL Server Management Studio integration, providing enhanced database access capabilities through Python.
 
 ## Overview
 
-This MCP server enables AI assistants and development tools to interact with your KonaAI databases through a standardized protocol. It supports both the KonaAI.Master database and the DataManagement database (DIT_GDB) with comprehensive database operations.
+This repository contains a Python-based MCP server that replaces the previous TypeScript implementation, offering enhanced features and better integration with SQL Server databases.
 
 ## Features
 
-- **Database Access**: Connect to both KonaAI.Master and DIT_GDB databases
-- **Table Operations**: List, query, insert, update, and delete table data
-- **Stored Procedures**: List, view definitions, and execute stored procedures
-- **Triggers**: List and view trigger definitions
-- **Views**: List, view definitions, and query view data
-- **Schema Exploration**: Comprehensive database schema information
-- **Security**: Windows Authentication with SQL injection protection
-- **MCP Resources**: Database objects exposed as MCP resources
-- **MCP Tools**: Database operations exposed as MCP tools
+### 🔧 **Core Capabilities**
+- **Dual Database Support**: Master Database (`KonaAI_Master`) and Data Management Database (`DIT_GDB`)
+- **SQL Server Authentication**: Secure username/password authentication
+- **Connection Pooling**: Efficient connection management with pyodbc
+- **Parameterized Queries**: SQL injection prevention through parameterized execution
+- **Comprehensive Schema Introspection**: Tables, views, stored procedures, triggers, indexes, and relationships
 
-## Prerequisites
+### 🛠️ **MCP Tools**
+- **Query Execution**: Safe SELECT, INSERT, UPDATE, DELETE operations
+- **CRUD Operations**: Insert, update, and delete data with validation
+- **Schema Analysis**: Detailed database schema information and relationships
+- **Stored Procedure Execution**: Execute procedures with input/output parameters
+- **Advanced Analytics**: Table statistics, row counts, and performance metrics
 
-- Node.js 18.0.0 or higher
-- Access to KonaAI.Master and DIT_GDB databases
-- Windows Authentication enabled
+### 📊 **MCP Resources**
+- **Tables**: Complete table metadata, schema, and sample data
+- **Stored Procedures**: Procedure definitions, parameters, and metadata
+- **Triggers**: Trigger definitions and execution context
+- **Views**: View definitions and dependencies
 
-## Installation
-
-1. **Navigate to the project directory:**
-   ```bash
-   cd KonaAI-SSMS-MCP
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-3. **Build the project:**
-   ```bash
-   npm run build
-   ```
-
-## Configuration
-
-### Environment Variables
-
-Create a `.env` file in the project root with your database configuration:
-
-```env
-# Database Configuration (Updated to match appsettings.json)
-MASTER_DB_SERVER=dc-l-
-MASTER_DB_NAME=KonaAI
-DATA_MGMT_DB_SERVER=dc-l-
-DATA_MGMT_DB_NAME=KonaAI
-
-# Query Configuration
-QUERY_TIMEOUT=30000
-MAX_ROWS=1000
-
-# Logging
-LOG_LEVEL=info
-```
-
-### Database Connections
-
-The server connects to the KonaAI database:
-
-1. **KonaAI Database**
-   - Server: `dc-l-`
-   - Database: `KonaAI`
-   - Authentication: Windows Authentication
-   - Connection String: `Data Source=dc-l-;Initial Catalog=KonaAI;Integrated Security=True;Encrypt=True;Trust Server Certificate=True`
-
-## Usage
-
-### Starting the Server
-
-```bash
-npm start
-```
-
-### Development Mode
-
-```bash
-npm run dev
-```
-
-### Watch Mode
-
-```bash
-npm run watch
-```
-
-## MCP Resources
-
-The server exposes database objects as MCP resources:
-
-### Tables
-- **URI Pattern**: `mcp://ssms/{database}/tables/{schema}.{tableName}`
-- **Examples**:
-  - `mcp://ssms/master/tables/dbo.Clients`
-  - `mcp://ssms/datamgmt/tables/dbo.File_Detail`
-
-### Stored Procedures
-- **URI Pattern**: `mcp://ssms/{database}/procedures/{schema}.{procedureName}`
-- **Examples**:
-  - `mcp://ssms/master/procedures/dbo.GetClientData`
-  - `mcp://ssms/datamgmt/procedures/dbo.ProcessFile`
-
-### Triggers
-- **URI Pattern**: `mcp://ssms/{database}/triggers/{triggerName}`
-- **Examples**:
-  - `mcp://ssms/master/triggers/ClientAuditTrigger`
-  - `mcp://ssms/datamgmt/triggers/FileUpdateTrigger`
-
-### Views
-- **URI Pattern**: `mcp://ssms/{database}/views/{schema}.{viewName}`
-- **Examples**:
-  - `mcp://ssms/master/views/dbo.ClientSummary`
-  - `mcp://ssms/datamgmt/views/dbo.FileStatistics`
-
-## MCP Tools
-
-The server provides the following tools for database operations:
-
-### Query Execution
-- **Tool**: `executeQuery`
-- **Description**: Execute SQL queries on the specified database
-- **Parameters**:
-  - `database`: 'master' | 'datamgmt'
-  - `query`: SQL query string
-  - `parameters`: Optional query parameters
-
-### CRUD Operations
-- **Tool**: `insertData`
-- **Description**: Insert data into a table
-- **Parameters**:
-  - `database`: 'master' | 'datamgmt'
-  - `tableName`: Name of the table
-  - `schema`: Schema name (default: 'dbo')
-  - `data`: Data to insert
-
-- **Tool**: `updateData`
-- **Description**: Update data in a table
-- **Parameters**:
-  - `database`: 'master' | 'datamgmt'
-  - `tableName`: Name of the table
-  - `schema`: Schema name (default: 'dbo')
-  - `data`: Data to update
-  - `whereClause`: WHERE clause for the update
-  - `whereParameters`: Parameters for the WHERE clause
-
-- **Tool**: `deleteData`
-- **Description**: Delete data from a table
-- **Parameters**:
-  - `database`: 'master' | 'datamgmt'
-  - `tableName`: Name of the table
-  - `schema`: Schema name (default: 'dbo')
-  - `whereClause`: WHERE clause for the delete
-  - `whereParameters`: Parameters for the WHERE clause
-
-### Schema Exploration
-- **Tool**: `getSchema`
-- **Description**: Get database schema information
-- **Parameters**:
-  - `database`: 'master' | 'datamgmt'
-  - `objectType`: 'tables' | 'procedures' | 'triggers' | 'views' | 'all'
-
-- **Tool**: `getTables`
-- **Description**: Get list of tables in the database
-- **Parameters**:
-  - `database`: 'master' | 'datamgmt'
-
-- **Tool**: `getTableSchema`
-- **Description**: Get detailed schema for a specific table
-- **Parameters**:
-  - `database`: 'master' | 'datamgmt'
-  - `tableName`: Name of the table
-  - `schema`: Schema name (default: 'dbo')
-
-- **Tool**: `getStoredProcedures`
-- **Description**: Get list of stored procedures in the database
-- **Parameters**:
-  - `database`: 'master' | 'datamgmt'
-
-- **Tool**: `getTriggers`
-- **Description**: Get list of triggers in the database
-- **Parameters**:
-  - `database`: 'master' | 'datamgmt'
-
-- **Tool**: `getViews`
-- **Description**: Get list of views in the database
-- **Parameters**:
-  - `database`: 'master' | 'datamgmt'
-
-## Cursor Integration
-
-To use this MCP server with Cursor, add the following to your workspace `.cursor/mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "ssms": {
-      "command": "node",
-      "args": ["KonaAI-SSMS-MCP/dist/index.js"],
-      "env": {}
-    }
-  }
-}
-```
-
-## Security Features
-
-- **Windows Authentication**: Uses integrated security, no credentials in code
-- **SQL Injection Protection**: Parameterized queries and input validation
-- **Query Timeouts**: Configurable timeouts to prevent long-running queries
-- **Operation Logging**: Comprehensive logging of database operations
-- **Permission-based Access**: Respects database user permissions
-
-## Error Handling
-
-The server provides comprehensive error handling:
-
-- **Connection Errors**: Database connection failures
-- **Query Errors**: SQL syntax and execution errors
-- **Permission Errors**: Access denied scenarios
-- **Timeout Errors**: Query timeout handling
-- **Validation Errors**: Input parameter validation
-
-## Development
-
-### Project Structure
+## Project Structure
 
 ```
 KonaAI-SSMS-MCP/
-├── src/
-│   ├── index.ts              # Main MCP server
-│   ├── config.ts             # Database configuration
-│   ├── database/
-│   │   ├── master-db.ts      # KonaAI.Master connection
-│   │   └── data-mgmt-db.ts   # DIT_GDB connection
-│   ├── resources/
-│   │   ├── tables.ts         # Table resources
-│   │   ├── procedures.ts     # Stored procedure resources
-│   │   ├── triggers.ts       # Trigger resources
-│   │   └── views.ts          # View resources
-│   └── tools/
-│       ├── query.ts          # Execute SQL queries
-│       ├── crud.ts           # CRUD operations
-│       └── schema.ts         # Schema exploration
-├── dist/                     # Compiled JavaScript
-├── package.json
-├── tsconfig.json
-└── README.md
+├── mcp-server/               # MCP Server Implementation
+│   ├── main.py              # Main entry point
+│   ├── mcp_config.json     # MCP client configuration
+│   ├── server/              # Core server implementation
+│   │   ├── ssms_mcp_server.py  # Main MCP server class
+│   │   ├── database/        # Database connection layer
+│   │   ├── tools/           # MCP tools implementation
+│   │   └── resources/       # MCP resources implementation
+│   ├── config/              # Configuration management
+│   │   ├── database_config.py
+│   │   └── env.example
+│   ├── docs/                # Documentation
+│   │   ├── README.md
+│   │   └── ARCHITECTURE_AND_STRUCTURE.md
+│   ├── requirements.txt     # Python dependencies
+│   └── pyproject.toml      # Project metadata
+└── README.md               # This file
 ```
 
-### Building
+## Quick Start
 
+### 1. Navigate to MCP Server
 ```bash
-npm run build
+cd mcp-server
 ```
 
-### Development
-
+### 2. Install Dependencies
 ```bash
-npm run dev
+pip install -r requirements.txt
 ```
 
-### Watching Changes
-
+### 3. Configure Environment
 ```bash
-npm run watch
+cp env.example .env
+# Edit .env with your database credentials
 ```
 
-## Troubleshooting
+### 4. Run the Server
+```bash
+python src/main.py
+```
 
-### Common Issues
+## Detailed Documentation
 
-1. **Database Connection Failed**
-   - Verify server names and database names
-   - Check Windows Authentication permissions
-   - Ensure SQL Server is running and accessible
+For comprehensive installation, configuration, and usage instructions, see the [MCP Server Documentation](mcp-server/docs/README.md).
 
-2. **Build Errors**
-   - Run `npm install` to ensure all dependencies are installed
-   - Check TypeScript configuration in `tsconfig.json`
+For detailed architecture and project structure information, see the [Architecture & Structure Guide](mcp-server/docs/ARCHITECTURE_AND_STRUCTURE.md).
 
-3. **Permission Errors**
-   - Verify database user has appropriate permissions
-   - Check Windows Authentication settings
+## Migration from TypeScript
 
-4. **Query Timeouts**
-   - Adjust `QUERY_TIMEOUT` in environment variables
-   - Optimize queries for better performance
+This Python implementation replaces the previous TypeScript version with the following improvements:
 
-### Logs
+- **Enhanced Security**: Better SQL injection prevention and input validation
+- **Stored Procedure Support**: Full execution with input/output parameters
+- **Advanced Schema Analysis**: Comprehensive database introspection
+- **Better Error Handling**: Detailed error messages and logging
+- **Performance Optimizations**: Connection pooling and query optimization
+- **Transaction Support**: Multi-statement transaction execution
 
-The server logs all operations to the console. Check the output for detailed error information.
+## Requirements
+
+- **Python 3.8+**
+- **Microsoft ODBC Driver 17 for SQL Server**
+- **Database Access**: Valid credentials for both Master and Data Management databases
+
+## Security
+
+- All queries use parameterized execution (no string interpolation)
+- Query type validation (whitelist approach)
+- Connection credentials in environment variables only
+- SQL injection prevention through pyodbc parameterization
 
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+3. Implement your changes with tests
+4. Submit a pull request
 
 ## License
 
-MIT License - see LICENSE file for details.
+MIT License - see LICENSE file for details
 
 ## Support
 
 For issues and questions:
-- Check the troubleshooting section
+- Create an issue in the repository
+- Check the troubleshooting section in the Python README
 - Review the logs for error details
-- Ensure all prerequisites are met
-- Verify database connectivity

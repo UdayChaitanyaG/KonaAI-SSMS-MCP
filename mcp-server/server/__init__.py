@@ -1,0 +1,1 @@
+# SSMS MCP Server Package

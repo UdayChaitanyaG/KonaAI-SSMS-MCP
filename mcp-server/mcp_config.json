@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "konaai-ssms": {
+      "command": "python",
+      "args": ["main.py"],
+      "env": {
+        "PYTHONPATH": "."
+      }
+    }
+  }
+}
