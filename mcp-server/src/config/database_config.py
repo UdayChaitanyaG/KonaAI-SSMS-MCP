@@ -32,16 +32,16 @@ class AppConfig(BaseSettings):
     """Application configuration."""
     
     # Master Database Configuration
-    master_db_server: str = Field(default="DC-L-0004\\MSSQLSERVER02", description="Master DB server")
-    master_db_name: str = Field(default="KonaAI_Master", description="Master database name")
-    master_db_user: str = Field(..., description="Master DB username")
-    master_db_password: str = Field(..., description="Master DB password")
+    master_db_server: str = Field(default="DC-L-", description="Master DB server")
+    master_db_name: str = Field(default="KonaAI", description="Master database name")
+    master_db_user: str = Field(default="", description="Master DB username (empty for Windows Auth)")
+    master_db_password: str = Field(default="", description="Master DB password (empty for Windows Auth)")
     
     # Data Management Database Configuration
-    data_mgmt_db_server: str = Field(default="dc-l-", description="Data Management DB server")
+    data_mgmt_db_server: str = Field(default="DC-L-", description="Data Management DB server")
     data_mgmt_db_name: str = Field(default="DIT_GDB", description="Data Management database name")
-    data_mgmt_db_user: str = Field(..., description="Data Management DB username")
-    data_mgmt_db_password: str = Field(..., description="Data Management DB password")
+    data_mgmt_db_user: str = Field(default="", description="Data Management DB username (empty for Windows Auth)")
+    data_mgmt_db_password: str = Field(default="", description="Data Management DB password (empty for Windows Auth)")
     
     # Application Settings
     query_timeout: int = Field(default=30, description="Query timeout in seconds")

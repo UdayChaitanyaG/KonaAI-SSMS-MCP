@@ -25,20 +25,20 @@ from mcp.types import (
 from config.database_config import AppConfig
 
 # Import database classes
-from server.database.master_db import MasterDatabase
-from server.database.datamgmt_db import DataManagementDatabase
+from .database.master_db import MasterDatabase
+from .database.datamgmt_db import DataManagementDatabase
 
 # Import tools
-from server.tools.query_tool import QueryTool
-from server.tools.crud_tool import CrudTool
-from server.tools.schema_tool import SchemaTool
-from server.tools.sp_tool import StoredProcedureTool
+from .tools.query_tool import QueryTool
+from .tools.crud_tool import CrudTool
+from .tools.schema_tool import SchemaTool
+from .tools.sp_tool import StoredProcedureTool
 
 # Import resources
-from server.resources.tables import TablesResource
-from server.resources.procedures import ProceduresResource
-from server.resources.triggers import TriggersResource
-from server.resources.views import ViewsResource
+from .resources.tables import TablesResource
+from .resources.procedures import ProceduresResource
+from .resources.triggers import TriggersResource
+from .resources.views import ViewsResource
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
