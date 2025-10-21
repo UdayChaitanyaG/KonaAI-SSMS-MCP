@@ -1,17 +1,18 @@
-# MCP Testing Suite
+# MCP Testing Suite - Essential Tests
 
-This directory contains all MCP-related testing and verification scripts for the SSMS MCP Server.
+This directory contains the **4 most essential MCP tests** for the SSMS MCP Server, providing comprehensive coverage without redundancy.
 
-## 📁 Test Files
+## 📁 Essential Test Files
 
 ### **Core Tests**
-- **`verify_mcp_server.py`** - Verifies MCP server initialization and component registration
-- **`test_database_connections.py`** - Tests database connections and basic operations
-- **`test_mcp_tools.py`** - Tests individual MCP tools functionality
-- **`test_mcp_resources.py`** - Tests individual MCP resources functionality
+- **`verify_mcp_server.py`** - **MOST IMPORTANT** - Verifies MCP server initialization and all components
+- **`test_database_connections.py`** - **CRITICAL** - Tests database connections and basic operations
+- **`test_mcp_tools.py`** - **IMPORTANT** - Tests individual MCP tools functionality
+- **`test_mcp_resources.py`** - **IMPORTANT** - Tests individual MCP resources functionality
 
 ### **Test Runner**
-- **`run_all_tests.py`** - Runs all tests in sequence and provides summary
+- **`run_all_tests.py`** - Runs all 4 essential tests in sequence with summary
+- **`ESSENTIAL_TESTS.md`** - Detailed explanation of the simplified test suite
 
 ## 🚀 **Quick Start**
 
@@ -166,3 +167,5 @@ If tests fail:
 ---
 
 **This testing suite ensures your MCP server is working correctly! 🚀**
+
+

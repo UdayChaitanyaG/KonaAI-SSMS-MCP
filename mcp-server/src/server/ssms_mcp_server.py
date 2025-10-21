@@ -82,7 +82,7 @@ class SSMSServer:
         """Register MCP handlers for tools and resources."""
         
         @self.server.list_tools()
-        async def list_tools() -> List[Tool]:
+        def list_tools() -> List[Tool]:
             """List all available tools."""
             tools = []
             
@@ -159,31 +159,32 @@ class SSMSServer:
             return tools
         
         @self.server.call_tool()
-        async def call_tool(name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
+        def call_tool(name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
             """Handle tool execution requests."""
             try:
+                import asyncio
                 if name == "execute_query":
-                    return await self.query_tool.execute_query(arguments)
+                    return asyncio.run(self.query_tool.execute_query(arguments))
                 elif name == "insert_data":
-                    return await self.crud_tool.insert_data(arguments)
+                    return asyncio.run(self.crud_tool.insert_data(arguments))
                 elif name == "update_data":
-                    return await self.crud_tool.update_data(arguments)
+                    return asyncio.run(self.crud_tool.update_data(arguments))
                 elif name == "delete_data":
-                    return await self.crud_tool.delete_data(arguments)
+                    return asyncio.run(self.crud_tool.delete_data(arguments))
                 elif name == "get_schema":
-                    return await self.schema_tool.get_schema(arguments)
+                    return asyncio.run(self.schema_tool.get_schema(arguments))
                 elif name == "get_tables":
-                    return await self.schema_tool.get_tables(arguments)
+                    return asyncio.run(self.schema_tool.get_tables(arguments))
                 elif name == "get_table_schema":
-                    return await self.schema_tool.get_table_schema(arguments)
+                    return asyncio.run(self.schema_tool.get_table_schema(arguments))
                 elif name == "get_stored_procedures":
-                    return await self.schema_tool.get_stored_procedures(arguments)
+                    return asyncio.run(self.schema_tool.get_stored_procedures(arguments))
                 elif name == "get_triggers":
-                    return await self.schema_tool.get_triggers(arguments)
+                    return asyncio.run(self.schema_tool.get_triggers(arguments))
                 elif name == "get_views":
-                    return await self.schema_tool.get_views(arguments)
+                    return asyncio.run(self.schema_tool.get_views(arguments))
                 elif name == "execute_procedure":
-                    return await self.sp_tool.execute_procedure(arguments)
+                    return asyncio.run(self.sp_tool.execute_procedure(arguments))
                 else:
                     return {
                         "error": f"Unknown tool: {name}",
@@ -198,37 +199,39 @@ class SSMSServer:
                 return {"error": f"Tool execution failed: {str(e)}"}
         
         @self.server.list_resources()
-        async def list_resources() -> List[Resource]:
+        def list_resources() -> List[Resource]:
             """List all available resources."""
             resources = []
             
             # Add table resources
-            resources.extend(await self.tables_resource.list_resources())
+            import asyncio
+            resources.extend(asyncio.run(self.tables_resource.list_resources()))
             
             # Add procedure resources
-            resources.extend(await self.procedures_resource.list_resources())
+            resources.extend(asyncio.run(self.procedures_resource.list_resources()))
             
             # Add trigger resources
-            resources.extend(await self.triggers_resource.list_resources())
+            resources.extend(asyncio.run(self.triggers_resource.list_resources()))
             
             # Add view resources
-            resources.extend(await self.views_resource.list_resources())
+            resources.extend(asyncio.run(self.views_resource.list_resources()))
             
             return resources
         
         @self.server.read_resource()
-        async def read_resource(uri: str) -> str:
+        def read_resource(uri: str) -> str:
             """Handle resource read requests."""
             try:
                 # Route to appropriate resource handler
+                import asyncio
                 if uri.startswith("ssms://master/tables/") or uri.startswith("ssms://datamgmt/tables/"):
-                    return await self.tables_resource.read_resource(uri)
+                    return asyncio.run(self.tables_resource.read_resource(uri))
                 elif uri.startswith("ssms://master/procedures/") or uri.startswith("ssms://datamgmt/procedures/"):
-                    return await self.procedures_resource.read_resource(uri)
+                    return asyncio.run(self.procedures_resource.read_resource(uri))
                 elif uri.startswith("ssms://master/triggers/") or uri.startswith("ssms://datamgmt/triggers/"):
-                    return await self.triggers_resource.read_resource(uri)
+                    return asyncio.run(self.triggers_resource.read_resource(uri))
                 elif uri.startswith("ssms://master/views/") or uri.startswith("ssms://datamgmt/views/"):
-                    return await self.views_resource.read_resource(uri)
+                    return asyncio.run(self.views_resource.read_resource(uri))
                 else:
                     return f"Unknown resource URI: {uri}"
             except Exception as e:
@@ -292,8 +295,10 @@ class SSMSServer:
     async def cleanup(self):
         """Cleanup database connections."""
         try:
-            await self.master_db.close_all_connections()
-            await self.datamgmt_db.close_all_connections()
+            if hasattr(self, 'master_db') and self.master_db:
+                self.master_db.close_all_connections()
+            if hasattr(self, 'datamgmt_db') and self.datamgmt_db:
+                self.datamgmt_db.close_all_connections()
             logger.info("Database connections closed")
         except Exception as e:
             logger.error(f"Error during cleanup: {str(e)}")

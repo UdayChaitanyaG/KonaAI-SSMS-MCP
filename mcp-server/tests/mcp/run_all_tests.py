@@ -40,11 +40,11 @@ def main():
         results.append((test_name, success))
         
         if success:
-            print(f"✓ {test_name} PASSED")
+            print(f"OK {test_name} PASSED")
             if stdout:
                 print(stdout)
         else:
-            print(f"✗ {test_name} FAILED")
+            print(f"ERROR {test_name} FAILED")
             if stderr:
                 print(f"Error: {stderr}")
             if stdout:
@@ -74,3 +74,5 @@ def main():
 if __name__ == "__main__":
     success = main()
     sys.exit(0 if success else 1)
+
+
