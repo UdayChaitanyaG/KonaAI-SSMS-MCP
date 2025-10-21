@@ -1,35 +1,35 @@
 """
-Master database operations for KonaAI Master database.
+Data Management database operations for KonaAI Data Management database.
 """
 
 import logging
 from typing import Any, Dict, List, Optional
 
 from .base import BaseDatabase
-from ..config import DatabaseConfig
+from config.database_config import DatabaseConfig
 
 
 logger = logging.getLogger(__name__)
 
 
-class MasterDatabase(BaseDatabase):
+class DataManagementDatabase(BaseDatabase):
     """
-    Master database operations for KonaAI Master database.
+    Data Management database operations for KonaAI Data Management database.
     """
     
     def __init__(self, db_config: DatabaseConfig):
         """
-        Initialize Master database connection.
+        Initialize Data Management database connection.
         
         Args:
-            db_config: Master database configuration
+            db_config: Data Management database configuration
         """
         super().__init__(db_config)
-        self.database_name = "Master"
+        self.database_name = "DataManagement"
     
     def get_tables(self) -> List[Dict[str, Any]]:
         """
-        Get list of all tables in the Master database.
+        Get list of all tables in the Data Management database.
         
         Returns:
             List of table information dictionaries
@@ -166,7 +166,7 @@ class MasterDatabase(BaseDatabase):
     
     def get_stored_procedures(self) -> List[Dict[str, Any]]:
         """
-        Get list of all stored procedures in the Master database.
+        Get list of all stored procedures in the Data Management database.
         
         Returns:
             List of stored procedure information
@@ -228,7 +228,7 @@ class MasterDatabase(BaseDatabase):
     
     def get_triggers(self) -> List[Dict[str, Any]]:
         """
-        Get list of all triggers in the Master database.
+        Get list of all triggers in the Data Management database.
         
         Returns:
             List of trigger information
@@ -263,7 +263,7 @@ class MasterDatabase(BaseDatabase):
     
     def get_views(self) -> List[Dict[str, Any]]:
         """
-        Get list of all views in the Master database.
+        Get list of all views in the Data Management database.
         
         Returns:
             List of view information
@@ -349,6 +349,106 @@ class MasterDatabase(BaseDatabase):
                 DB_NAME() as database_name,
                 @@VERSION as sql_server_version,
                 GETDATE() as current_time
+        """
+        result = self.execute_query(query)
+        return result[0] if result else {}
+    
+    # Data Management specific methods
+    
+    def get_file_details(self, limit: int = 100) -> List[Dict[str, Any]]:
+        """
+        Get file details from the data management system.
+        
+        Args:
+            limit: Maximum number of records to return
+            
+        Returns:
+            List of file detail records
+        """
+        query = """
+            SELECT TOP (?) 
+                RowId,
+                FileName,
+                FilePath,
+                FileSize,
+                FileType,
+                UploadedOn,
+                Description,
+                IsActive,
+                CreatedOn,
+                CreatedBy,
+                ModifiedOn,
+                ModifiedBy
+            FROM File_Detail
+            WHERE IsActive = 1
+            ORDER BY UploadedOn DESC
+        """
+        return self.execute_query(query, {'limit': limit})
+    
+    def get_client_projects(self, client_id: Optional[str] = None, limit: int = 100) -> List[Dict[str, Any]]:
+        """
+        Get client projects from the data management system.
+        
+        Args:
+            client_id: Optional client ID to filter by
+            limit: Maximum number of records to return
+            
+        Returns:
+            List of client project records
+        """
+        if client_id:
+            query = """
+                SELECT TOP (?) 
+                    RowId,
+                    ProjectName,
+                    ClientId,
+                    ProjectStatus,
+                    StartDate,
+                    EndDate,
+                    Description,
+                    IsActive,
+                    CreatedOn,
+                    CreatedBy
+                FROM ClientProject
+                WHERE ClientId = ? AND IsActive = 1
+                ORDER BY CreatedOn DESC
+            """
+            return self.execute_query(query, {'limit': limit, 'client_id': client_id})
+        else:
+            query = """
+                SELECT TOP (?) 
+                    RowId,
+                    ProjectName,
+                    ClientId,
+                    ProjectStatus,
+                    StartDate,
+                    EndDate,
+                    Description,
+                    IsActive,
+                    CreatedOn,
+                    CreatedBy
+                FROM ClientProject
+                WHERE IsActive = 1
+                ORDER BY CreatedOn DESC
+            """
+            return self.execute_query(query, {'limit': limit})
+    
+    def get_data_quality_metrics(self) -> Dict[str, Any]:
+        """
+        Get data quality metrics for the data management system.
+        
+        Returns:
+            Dictionary with data quality metrics
+        """
+        query = """
+            SELECT 
+                COUNT(*) as total_files,
+                COUNT(CASE WHEN IsActive = 1 THEN 1 END) as active_files,
+                COUNT(CASE WHEN IsActive = 0 THEN 1 END) as inactive_files,
+                AVG(FileSize) as avg_file_size,
+                MAX(UploadedOn) as latest_upload,
+                MIN(UploadedOn) as earliest_upload
+            FROM File_Detail
         """
         result = self.execute_query(query)
         return result[0] if result else {}

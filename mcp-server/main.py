@@ -17,12 +17,19 @@ import sys
 import os
 from pathlib import Path
 
-# Add the server directory to the Python path
-server_dir = Path(__file__).parent / "server"
-sys.path.insert(0, str(server_dir))
+# Add the src directory to the Python path
+src_dir = Path(__file__).parent / "src"
+sys.path.insert(0, str(src_dir))
+
+# Import centralized configuration
+from config.app_config import setup_environment
+
+# Set up environment variables
+setup_environment()
 
 # Import and run the MCP server
 from server.ssms_mcp_server import main
 
 if __name__ == "__main__":
-    main()
+    import asyncio
+    asyncio.run(main())

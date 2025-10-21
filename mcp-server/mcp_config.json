@@ -3,6 +3,7 @@
     "konaai-ssms": {
       "command": "python",
       "args": ["main.py"],
+      "cwd": "C:\\Users\\UdayChaitanyaGurvind\\Desktop\\KonaAi\\KonaAI Web Application\\KonaAI-SSMS-MCP\\mcp-server",
       "env": {
         "PYTHONPATH": "."
       }

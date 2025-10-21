@@ -90,18 +90,31 @@ def get_connection_string(db_config: DatabaseConfig) -> str:
     Returns:
         Connection string for pyodbc
     """
-    return (
-        f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-        f"SERVER={db_config.server};"
-        f"DATABASE={db_config.database};"
-        f"UID={db_config.username};"
-        f"PWD={db_config.password};"
-        f"PORT={db_config.port};"
-        f"Encrypt={'yes' if db_config.encrypt else 'no'};"
-        f"TrustServerCertificate={'yes' if db_config.trust_server_certificate else 'no'};"
-        f"Connection Timeout={db_config.timeout};"
-        f"Login Timeout={db_config.timeout};"
-    )
+    # Use Windows Authentication if username is empty
+    if not db_config.username or not db_config.password:
+        return (
+            f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+            f"SERVER={db_config.server};"
+            f"DATABASE={db_config.database};"
+            f"Trusted_Connection=yes;"
+            f"Encrypt={'yes' if db_config.encrypt else 'no'};"
+            f"TrustServerCertificate={'yes' if db_config.trust_server_certificate else 'no'};"
+            f"Connection Timeout={db_config.timeout};"
+        )
+    else:
+        # Use SQL Server Authentication
+        return (
+            f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+            f"SERVER={db_config.server};"
+            f"DATABASE={db_config.database};"
+            f"UID={db_config.username};"
+            f"PWD={db_config.password};"
+            f"PORT={db_config.port};"
+            f"Encrypt={'yes' if db_config.encrypt else 'no'};"
+            f"TrustServerCertificate={'yes' if db_config.trust_server_certificate else 'no'};"
+            f"Connection Timeout={db_config.timeout};"
+            f"Login Timeout={db_config.timeout};"
+        )
 
 
 # Global configuration instance

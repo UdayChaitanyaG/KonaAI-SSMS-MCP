@@ -22,7 +22,7 @@ from mcp.types import (
 )
 
 # Import configuration
-from config.database_config import Settings
+from config.database_config import AppConfig
 
 # Import database classes
 from server.database.master_db import MasterDatabase
@@ -54,12 +54,12 @@ class SSMSServer:
     
     def __init__(self):
         """Initialize the MCP server with all components."""
-        self.settings = Settings()
+        self.settings = AppConfig()
         self.server = Server("konaai-ssms")
         
         # Initialize database connections
-        self.master_db = MasterDatabase(self.settings.master_db)
-        self.datamgmt_db = DataManagementDatabase(self.settings.datamgmt_db)
+        self.master_db = MasterDatabase(self.settings.get_master_db_config())
+        self.datamgmt_db = DataManagementDatabase(self.settings.get_data_mgmt_db_config())
         
         # Initialize tools
         self.query_tool = QueryTool(self.master_db, self.datamgmt_db)
@@ -252,6 +252,43 @@ class SSMSServer:
             # Cleanup database connections
             await self.cleanup()
     
+    def test_connection(self):
+        """Test database connection and display table information."""
+        print("SSMS MCP Server - Database Connection Test")
+        print("=" * 60)
+        
+        try:
+            # Test Master Database
+            print("Testing Master Database Connection...")
+            master_tables = self.master_db.get_tables()
+            print(f"Master Database: {len(master_tables)} tables found")
+            
+            if master_tables:
+                print("First 5 tables in Master Database:")
+                for i, table in enumerate(master_tables[:5], 1):
+                    print(f"   {i}. {table['table_name']} (Schema: {table['table_schema']})")
+            
+            # Test Data Management Database
+            print("\nTesting Data Management Database Connection...")
+            datamgmt_tables = self.datamgmt_db.get_tables()
+            print(f"Data Management Database: {len(datamgmt_tables)} tables found")
+            
+            if datamgmt_tables:
+                print("First 5 tables in Data Management Database:")
+                for i, table in enumerate(datamgmt_tables[:5], 1):
+                    print(f"   {i}. {table['table_name']} (Schema: {table['table_schema']})")
+            
+            print("\nDatabase connection test completed successfully!")
+            return True
+            
+        except Exception as e:
+            print(f"Connection test failed: {str(e)}")
+            print("\nTroubleshooting steps:")
+            print("1. Ensure SQL Server is running")
+            print("2. Check Windows Authentication is enabled")
+            print("3. Verify database access permissions")
+            return False
+
     async def cleanup(self):
         """Cleanup database connections."""
         try:

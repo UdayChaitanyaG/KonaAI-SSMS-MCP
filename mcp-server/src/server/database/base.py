@@ -9,7 +9,7 @@ from contextlib import contextmanager
 import pyodbc
 from pyodbc import Connection, Cursor
 
-from ..config import DatabaseConfig, get_connection_string
+from config.database_config import DatabaseConfig, get_connection_string
 
 
 logger = logging.getLogger(__name__)

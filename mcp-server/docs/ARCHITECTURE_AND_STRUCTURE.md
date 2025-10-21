@@ -1,345 +1,313 @@
-# KonaAI SSMS MCP Server - Architecture & Structure
+# SSMS MCP Server - Complete Documentation
 
-## Overview
+## 🎯 **Overview**
 
-The KonaAI SSMS MCP Server is a comprehensive Model Context Protocol (MCP) server that provides enhanced SQL Server database access capabilities. It follows a modular architecture designed for maintainability, scalability, and security.
+The SSMS MCP Server is a comprehensive Model Context Protocol (MCP) server that provides enhanced SQL Server database access capabilities through Python. It supports both Master and Data Management databases with Windows Authentication.
 
-## Directory Structure
+## 🚀 **Quick Start**
 
-```
-KonaAI-SSMS-MCP/
-├── .gitignore                     # Git ignore rules for Python project
-├── README.md                      # Main project documentation
-└── mcp-server/                    # MCP Server Implementation
-    ├── main.py                    # 🚀 Main entry point
-    ├── mcp_config.json           # MCP client configuration
-    ├── requirements.txt           # Python dependencies
-    ├── pyproject.toml            # Project metadata
-    │
-    ├── server/                   # 🏗️ Core Server Implementation
-    │   ├── __init__.py
-    │   ├── ssms_mcp_server.py     # Main MCP server class
-    │   │
-    │   ├── database/             # 🗄️ Database Connection Layer
-    │   │   ├── __init__.py
-    │   │   ├── base.py           # Base database connection with pooling
-    │   │   ├── master_db.py      # Master database operations
-    │   │   └── datamgmt_db.py    # Data Management database operations
-    │   │
-    │   ├── tools/                # 🛠️ MCP Tools (Executable Operations)
-    │   │   ├── __init__.py
-    │   │   ├── query_tool.py     # SQL query execution
-    │   │   ├── crud_tool.py      # CRUD operations (Insert/Update/Delete)
-    │   │   ├── schema_tool.py    # Schema introspection and analysis
-    │   │   └── sp_tool.py        # Stored procedure execution
-    │   │
-    │   └── resources/             # 📚 MCP Resources (Metadata)
-    │       ├── __init__.py
-    │       ├── tables.py         # Table metadata and schema
-    │       ├── procedures.py     # Stored procedure metadata
-    │       ├── triggers.py       # Trigger metadata
-    │       └── views.py          # View metadata
-    │
-    ├── config/                   # ⚙️ Configuration Management
-    │   ├── __init__.py
-    │   ├── database_config.py    # Database configuration with Pydantic
-    │   └── env.example          # Environment variables template
-    │
-    └── docs/                     # 📖 Documentation
-        ├── __init__.py
-        ├── README.md             # Detailed setup and usage guide
-        └── ARCHITECTURE_AND_STRUCTURE.md  # This file
+### **1. Test Database Connection**
+```bash
+cd "C:\Users\UdayChaitanyaGurvind\Desktop\KonaAi\KonaAI Web Application\KonaAI-SSMS-MCP\mcp-server"
+python tests/test_connection.py
 ```
 
-## Component Architecture
-
-### 1. Entry Point (`main.py`)
-- **Purpose**: Main entry point for the MCP server
-- **Responsibilities**: 
-  - Set up Python path
-  - Import and execute the MCP server
-  - Handle command-line arguments
-
-### 2. MCP Server (`server/ssms_mcp_server.py`)
-- **Purpose**: Core MCP server implementation
-- **Responsibilities**:
-  - Initialize MCP server with StdIO transport
-  - Register all tools and resources
-  - Handle tool execution requests
-  - Handle resource read requests
-  - Error handling and logging
-  - Graceful shutdown with connection cleanup
-
-### 3. Database Layer (`server/database/`)
-- **Purpose**: Database connection and operation management
-- **Components**:
-  - **`base.py`**: Base database connection class with connection pooling
-  - **`master_db.py`**: Master database specific operations
-  - **`datamgmt_db.py`**: Data Management database specific operations
-
-### 4. Tools Layer (`server/tools/`)
-- **Purpose**: MCP tools that perform executable operations
-- **Components**:
-  - **`query_tool.py`**: Execute SQL queries (SELECT, INSERT, UPDATE, DELETE)
-  - **`crud_tool.py`**: CRUD operations (Insert, Update, Delete)
-  - **`schema_tool.py`**: Schema introspection and analysis
-  - **`sp_tool.py`**: Stored procedure execution
-
-### 5. Resources Layer (`server/resources/`)
-- **Purpose**: MCP resources that expose metadata
-- **Components**:
-  - **`tables.py`**: Table metadata and schema information
-  - **`procedures.py`**: Stored procedure metadata
-  - **`triggers.py`**: Trigger metadata
-  - **`views.py`**: View metadata
-
-### 6. Configuration Layer (`config/`)
-- **Purpose**: Configuration management and environment setup
-- **Components**:
-  - **`database_config.py`**: Database configuration using Pydantic Settings
-  - **`env.example`**: Environment variables template
-
-## File Descriptions
-
-### 🚀 Core Files
-
-| File | Purpose | Key Features |
-|------|--------|--------------|
-| `main.py` | Main entry point | Python path setup, server execution |
-| `mcp_config.json` | MCP client config | Cursor/Claude Desktop integration |
-| `requirements.txt` | Dependencies | Python package requirements |
-| `pyproject.toml` | Project metadata | Build configuration, entry points |
-
-### 🏗️ Server Implementation
-
-| File | Purpose | Key Features |
-|------|--------|--------------|
-| `ssms_mcp_server.py` | Main MCP server | StdIO transport, tool/resource registration |
-| `database/base.py` | Base database class | Connection pooling, parameterized queries |
-| `database/master_db.py` | Master DB operations | Schema queries, CRUD operations |
-| `database/datamgmt_db.py` | Data Mgmt DB operations | Schema queries, CRUD operations |
-
-### 🛠️ MCP Tools
-
-| File | Purpose | Key Features |
-|------|--------|--------------|
-| `query_tool.py` | SQL query execution | SELECT, INSERT, UPDATE, DELETE |
-| `crud_tool.py` | CRUD operations | Insert, Update, Delete with validation |
-| `schema_tool.py` | Schema analysis | Tables, views, procedures, relationships |
-| `sp_tool.py` | Stored procedures | Execute with input/output parameters |
-
-### 📚 MCP Resources
-
-| File | Purpose | Key Features |
-|------|--------|--------------|
-| `tables.py` | Table metadata | Schema, columns, constraints, indexes |
-| `procedures.py` | Procedure metadata | Definitions, parameters, dependencies |
-| `triggers.py` | Trigger metadata | Definitions, execution context |
-| `views.py` | View metadata | Definitions, dependencies, relationships |
-
-### ⚙️ Configuration
-
-| File | Purpose | Key Features |
-|------|--------|--------------|
-| `database_config.py` | Database config | Pydantic Settings, environment variables |
-| `env.example` | Environment template | All required environment variables |
-
-## Data Flow
-
-```
-Client Request → MCP Server → Tool/Resource → Database Layer → SQL Server
-                ↓
-            Response ← Formatted Result ← Query Result ← Database Response
+### **2. Start MCP Server**
+```bash
+python main.py
 ```
 
-## Module Dependencies
-
-```
-main.py
-└── server/ssms_mcp_server.py
-    ├── config/database_config.py
-    ├── server/database/base.py
-    │   ├── server/database/master_db.py
-    │   └── server/database/datamgmt_db.py
-    ├── server/tools/query_tool.py
-    ├── server/tools/crud_tool.py
-    ├── server/tools/schema_tool.py
-    ├── server/tools/sp_tool.py
-    ├── server/resources/tables.py
-    ├── server/resources/procedures.py
-    ├── server/resources/triggers.py
-    └── server/resources/views.py
+### **3. Configure Cursor**
+Add to your Cursor MCP configuration:
+```json
+{
+  "mcpServers": {
+    "konaai-ssms": {
+      "command": "python",
+      "args": ["main.py"],
+      "cwd": "C:\\Users\\UdayChaitanyaGurvind\\Desktop\\KonaAi\\KonaAI Web Application\\KonaAI-SSMS-MCP\\mcp-server",
+      "env": {
+        "PYTHONPATH": "."
+      }
+    }
+  }
+}
 ```
 
-## Security Architecture
+## 📊 **Available Databases**
 
-### 1. Authentication
-- **SQL Server Authentication**: Username/password based authentication
-- **Environment Variables**: Credentials stored in environment variables
-- **No Hardcoded Secrets**: All sensitive data externalized
+### **Master Database (KonaAI) - 29 Tables**
+- **App Schema**: Client, User, UserAudit
+- **Client Schema**: ClientLicense, ClientProject
+- **ClientUserMetaData Schema**: Various audit tables
 
-### 2. SQL Injection Prevention
-- **Parameterized Queries**: All queries use parameterized execution
-- **Input Validation**: Query type validation and sanitization
-- **No String Interpolation**: No direct string concatenation in SQL
+### **Data Management Database (DIT_GDB) - 367 Tables**
+- **Analytics Schema**: COIDetails, COIHeader, CustomerAddress, CustomerMaster, DistributorMaster
+- **Customer Schema**: Customer-related tables
+- **Analytics Schema**: Analytics and reporting tables
 
-### 3. Connection Security
-- **Connection Pooling**: Secure connection management
-- **Timeout Handling**: Prevents long-running connections
-- **Error Handling**: Comprehensive error handling without information leakage
+## 🛠️ **MCP Tools**
 
-## Performance Architecture
+### **Query Tool**
+Execute SQL queries on both databases:
+```
+Query Master database: SELECT TOP 10 * FROM App.Client
+Query Data Management database: SELECT TOP 10 * FROM Analytics.CustomerMaster
+```
 
-### 1. Connection Management
-- **Connection Pooling**: Efficient connection reuse
-- **Connection Limits**: Configurable connection pool size
-- **Connection Timeout**: Automatic connection cleanup
+### **CRUD Tool**
+Perform CRUD operations:
+```
+Create: Create a new record in App.Client with Name='Test Client'
+Read: Read all records from App.Client where IsActive=1
+Update: Update App.Client set Name='Updated Name' where Id=1
+Delete: Delete from App.Client where Id=1
+```
 
-### 2. Query Optimization
-- **Result Set Limits**: Configurable maximum rows
-- **Query Timeout**: Prevents long-running queries
-- **Caching**: Schema information caching for repeated requests
+### **Schema Tool**
+Analyze database schema:
+```
+Get table schema: Show schema for App.Client
+List tables: List all tables in Master database
+Get relationships: Show foreign keys for App.Client
+```
 
-### 3. Resource Management
-- **Memory Management**: Efficient memory usage for large result sets
-- **Resource Cleanup**: Proper cleanup of database connections
-- **Async-Ready**: Architecture prepared for async operations
+### **Stored Procedure Tool**
+Execute stored procedures:
+```
+Execute procedure: Execute sp_GetClientInfo with parameter @ClientId=1
+List procedures: Show all stored procedures in Master database
+```
 
-## Error Handling Architecture
+## 📚 **MCP Resources**
 
-### 1. Database Errors
-- **Connection Errors**: Retry logic with exponential backoff
-- **Query Errors**: Detailed error messages with context
-- **Timeout Errors**: Graceful timeout handling
+### **Tables Resource**
+Access table metadata:
+```
+List all tables in Master database
+Show table metadata for App.Client
+Get table statistics for Analytics.CustomerMaster
+```
 
-### 2. MCP Errors
-- **Tool Errors**: Proper error propagation to MCP clients
-- **Resource Errors**: Graceful resource access failures
-- **Server Errors**: Comprehensive server error handling
+### **Procedures Resource**
+Access stored procedure information:
+```
+List all stored procedures in Master database
+Show procedure information for sp_GetClientInfo
+Get procedure usage statistics
+```
 
-### 3. Logging
-- **Structured Logging**: JSON-formatted logs
-- **Log Levels**: Configurable logging levels
-- **Error Tracking**: Comprehensive error tracking and reporting
+### **Triggers Resource**
+Access trigger information:
+```
+List all triggers in Master database
+Show trigger information for Client.ClientProject
+Get trigger dependencies
+```
 
-## Key Design Principles
+### **Views Resource**
+Access view information:
+```
+List all views in Data Management database
+Show view definition for Analytics.CustomerView
+Get view dependencies
+```
 
-### 1. **Separation of Concerns**
-- **Database Layer**: Pure database operations
-- **Tools Layer**: MCP tool implementations
-- **Resources Layer**: MCP resource implementations
-- **Configuration Layer**: Environment and settings management
+## 🏗️ **Architecture**
 
-### 2. **Modular Architecture**
-- Each component has a single responsibility
-- Clear interfaces between layers
-- Easy to extend and maintain
+### **System Architecture**
+```
+MCP Client (Cursor/Claude)
+        ↓ MCP Protocol (JSON-RPC)
+SSMS MCP Server
+        ↓ Database Operations
+Database Layer (Master DB + Data Mgmt DB)
+        ↓ SQL Server Connection
+SQL Server (DC-L-)
+```
 
-### 3. **Security First**
-- Parameterized queries prevent SQL injection
-- Environment variables for sensitive data
-- Input validation and sanitization
+### **Component Structure**
+```
+mcp-server/
+├── src/
+│   ├── config/           # Configuration management
+│   │   ├── app_config.py      # Centralized application configuration
+│   │   └── database_config.py # Database configuration with Windows Auth
+│   └── server/           # MCP server implementation
+│       ├── ssms_mcp_server.py # Main MCP server class
+│       ├── database/          # Database connection classes
+│       │   ├── base.py        # Base database class with connection pooling
+│       │   ├── master_db.py   # Master database operations (KonaAI)
+│       │   └── datamgmt_db.py # Data management database operations (DIT_GDB)
+│       ├── tools/             # MCP tools implementation
+│       │   ├── query_tool.py  # SQL query execution tool
+│       │   ├── crud_tool.py   # CRUD operations tool
+│       │   ├── schema_tool.py # Schema introspection tool
+│       │   └── sp_tool.py     # Stored procedure execution tool
+│       └── resources/         # MCP resources implementation
+│           ├── tables.py      # Tables resource (metadata)
+│           ├── procedures.py # Stored procedures resource
+│           ├── triggers.py   # Database triggers resource
+│           └── views.py      # Database views resource
+├── tests/                # Test files directory
+│   └── test_connection.py # Database connection test
+├── main.py              # Application entry point
+├── requirements.txt     # Python dependencies
+└── mcp_config.json      # MCP client configuration
+```
 
-### 4. **Performance Optimized**
-- Connection pooling for database connections
-- Configurable result set limits
-- Efficient query execution
+## 🔧 **Configuration**
 
-### 5. **MCP Compliance**
-- Follows MCP protocol specifications
-- Proper tool and resource registration
-- StdIO transport for client integration
+### **Database Configuration**
+The server uses Windows Authentication with the following databases:
+- **Master Database**: KonaAI (29 tables)
+- **Data Management Database**: DIT_GDB (367 tables)
 
-## Extension Points
+### **Connection Settings**
+- **Server**: DC-L-
+- **Authentication**: Windows Authentication (Trusted Connection)
+- **Connection Pooling**: Enabled for efficient connection management
 
-### 1. New Tools
-- Add new tool classes in `server/tools/`
-- Implement MCP tool interface
-- Register in main server
+## 🔒 **Security Features**
 
-### 2. New Resources
-- Add new resource classes in `server/resources/`
-- Implement MCP resource interface
-- Register in main server
+### **Authentication**
+- **Windows Authentication**: Primary authentication method
+- **Trusted Connection**: Secure database access without password storage
+- **No Credential Storage**: Credentials not stored in application code
 
-### 3. New Database Support
-- Extend `base.py` for new database types
-- Create specific database classes
-- Update configuration as needed
+### **Data Protection**
+- **Parameterized Queries**: All queries use parameterization to prevent SQL injection
+- **Input Validation**: All inputs validated before processing
+- **Error Handling**: Secure error reporting without information leakage
+- **Connection Security**: Encrypted connections with certificate trust
 
-## Development Workflow
+## 📈 **Performance Features**
 
-### 1. **Adding New Tools**
-1. Create new tool class in `server/tools/`
-2. Implement MCP tool interface
-3. Register in `ssms_mcp_server.py`
-4. Add tests and documentation
+### **Connection Management**
+- **Connection Pooling**: Efficient database connection management
+- **Pool Configuration**: Configurable pool size and timeouts
+- **Connection Reuse**: Reuse connections for multiple operations
+- **Automatic Cleanup**: Automatic connection cleanup and recovery
 
-### 2. **Adding New Resources**
-1. Create new resource class in `server/resources/`
-2. Implement MCP resource interface
-3. Register in `ssms_mcp_server.py`
-4. Add tests and documentation
+### **Query Optimization**
+- **Parameterized Queries**: Optimized query execution
+- **Result Limiting**: Configurable row limits to prevent memory issues
+- **Query Caching**: Intelligent caching for frequently accessed data
+- **Performance Monitoring**: Query execution time tracking
 
-### 3. **Database Changes**
-1. Update `database_config.py` if needed
-2. Modify database classes as required
-3. Update environment template
-4. Test with both databases
+## 🧪 **Testing**
 
-## Deployment Architecture
+### **Connection Test**
+```bash
+python tests/test_connection.py
+```
 
-### 1. Local Development
-- Python virtual environment
-- Environment variables from `.env` file
-- Direct execution with `python main.py`
+### **Expected Output**
+```
+SSMS MCP Server - Database Connection Test
+============================================================
+Testing Master Database Connection...
+Master Database: 29 tables found
+First 5 tables in Master Database:
+   1. Client (Schema: App)
+   2. User (Schema: App)
+   3. UserAudit (Schema: App)
+   4. ClientLicense (Schema: Client)
+   5. ClientProject (Schema: Client)
 
-### 2. Production Deployment
-- Docker containerization (future)
-- Environment variables from secure store
-- Process management with systemd/supervisor
+Testing Data Management Database Connection...
+Data Management Database: 367 tables found
+First 5 tables in Data Management Database:
+   1. COIDetails (Schema: Analytics)
+   2. COIHeader (Schema: Analytics)
+   3. CustomerAddress (Schema: Analytics)
+   4. CustomerMaster (Schema: Analytics)
+   5. DistributorMaster (Schema: Analytics)
 
-### 3. MCP Integration
-- StdIO transport for Cursor/Claude Desktop
-- JSON-RPC protocol communication
-- Configuration through MCP client settings
+Database connection test completed successfully!
+```
 
-## Testing Strategy
+## 🚀 **Usage Examples**
 
-### 1. **Unit Tests**
-- Test individual components in isolation
-- Mock database connections
-- Test error scenarios
+### **Database Queries**
+```
+Query Master database: SELECT TOP 5 * FROM App.Client
+Query Data Management database: SELECT TOP 5 * FROM Analytics.CustomerMaster
+Count active users: SELECT COUNT(*) FROM App.User WHERE IsActive=1
+```
 
-### 2. **Integration Tests**
-- Test with real database connections
-- Test MCP protocol compliance
-- Test tool and resource functionality
+### **Schema Exploration**
+```
+List all tables: SELECT TABLE_NAME, TABLE_SCHEMA FROM INFORMATION_SCHEMA.TABLES
+Get table schema: Show schema for App.Client
+Get relationships: Show foreign keys for App.Client
+```
 
-### 3. **End-to-End Tests**
-- Test with MCP clients (Cursor/Claude Desktop)
-- Test complete workflows
-- Test error handling and recovery
+### **Natural Language Queries**
+```
+Show me all clients from the App schema
+Get the first 10 customers from the Analytics schema
+Count how many users are active
+Show me the schema for the Client table
+```
 
-## Monitoring and Observability
+## 🔍 **Troubleshooting**
 
-### 1. Metrics
-- Query execution time
-- Connection pool statistics
-- Error rates and types
-- Resource usage
+### **Common Issues**
 
-### 2. Logging
-- Structured logging with correlation IDs
-- Request/response logging
-- Error tracking and alerting
-- Performance monitoring
+#### **MCP Server Not Starting**
+```bash
+# Check if Python is in PATH
+python --version
 
-### 3. Health Checks
-- Database connectivity checks
-- MCP server health endpoints
-- Resource availability monitoring
+# Check if dependencies are installed
+pip list | grep mcp
 
-## Conclusion
+# Test the server manually
+python main.py
+```
 
-This architecture provides a solid foundation for a scalable, secure, and maintainable MCP server for SQL Server database access. The modular design ensures easy maintenance and extension while following MCP best practices and Python conventions.
+#### **Database Connection Issues**
+```bash
+# Test database connection
+python tests/test_connection.py
+
+# Check SQL Server is running
+# Verify Windows Authentication is enabled
+```
+
+#### **Cursor Not Recognizing MCP Server**
+- Check Cursor's MCP settings
+- Verify the configuration JSON is correct
+- Restart Cursor after configuration changes
+- Check Cursor's logs for MCP errors
+
+### **Debug Steps**
+
+#### **Check Server Logs**
+```bash
+# Run server with verbose logging
+python main.py --verbose
+```
+
+#### **Test Individual Components**
+```bash
+# Test database connection
+python tests/test_connection.py
+
+# Test MCP server initialization
+python -c "from src.server.ssms_mcp_server import SSMSServer; server = SSMSServer(); print('Server initialized successfully')"
+```
+
+## 📞 **Support**
+
+If you encounter any issues:
+1. Check the troubleshooting section above
+2. Verify all prerequisites are met
+3. Test the connection with `python tests/test_connection.py`
+4. Check Cursor's MCP server status
+5. Review the logs for any error messages
+
+---
+
+**Your SSMS MCP Server is now ready to use with Cursor! You can query your databases using natural language directly in the IDE! 🚀**
