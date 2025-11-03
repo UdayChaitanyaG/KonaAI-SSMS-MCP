@@ -74,11 +74,42 @@ cp env.example .env
 python src/main.py
 ```
 
-## Detailed Documentation
+## SSMS MCP – Setup & Usage (Quick)
 
-For comprehensive installation, configuration, and usage instructions, see the [MCP Server Documentation](mcp-server/docs/README.md).
+### Setup
+1. Go to `mcp-server`
+   ```bash
+   cd mcp-server
+   ```
+2. Configure databases in `.env` (Windows Auth if user/password empty):
+   ```
+   master_db_server=DC-L-
+   master_db_name=KonaAI
+   data_mgmt_db_server=DC-L-
+   data_mgmt_db_name=DIT_GDB
+   ```
+3. Ensure Microsoft ODBC Driver 17 for SQL Server is installed.
 
-For detailed architecture and project structure information, see the [Architecture & Structure Guide](mcp-server/docs/ARCHITECTURE_AND_STRUCTURE.md).
+### Start / Restart
+- In Cursor: Settings → MCP Servers → enable/toggle `user-konaai-ssms`.
+- Manual (debug):
+  ```powershell
+  cd "mcp-server"
+  "C:\\Program Files\\KonaAI_ML\\.pyenv\\pyenv-win\\shims\\python.bat" -u .\main.py
+  ```
+
+### Use
+- Ask your agent to:
+  - "List stored procedures in DataManagement"
+  - "Show schema for App.Questionnaire"
+  - "Run App.GetQuestionnaire with params ..."
+
+### Troubleshooting
+- No tools/resources → restart the MCP server.
+- Trigger listing error → ensure latest code (uses `OBJECT_SCHEMA_NAME`).
+
+## Full Guide
+See the consolidated documentation: `mcp-server/docs/README.md`.
 
 ## Migration from TypeScript
 
