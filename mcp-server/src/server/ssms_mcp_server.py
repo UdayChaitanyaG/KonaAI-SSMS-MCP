@@ -82,116 +82,74 @@ class SSMSServer:
         """Register MCP handlers for tools and resources."""
         
         @self.server.list_tools()
-        def list_tools() -> List[Tool]:
+        async def list_tools() -> List[Tool]:
             """List all available tools."""
             tools = []
             
             # Add query tool
-            tools.append(Tool(
-                name="execute_query",
-                description="Execute SQL queries (SELECT, INSERT, UPDATE, DELETE) on either database",
-                inputSchema=self.query_tool.get_input_schema()
-            ))
+            tools.append(self.query_tool.get_tool())
             
             # Add CRUD tools
-            tools.append(Tool(
-                name="insert_data",
-                description="Insert data into a table",
-                inputSchema=self.crud_tool.get_insert_schema()
-            ))
+            tools.append(self.crud_tool.get_insert_tool())
             
-            tools.append(Tool(
-                name="update_data",
-                description="Update data in a table",
-                inputSchema=self.crud_tool.get_update_schema()
-            ))
+            tools.append(self.crud_tool.get_update_tool())
             
-            tools.append(Tool(
-                name="delete_data",
-                description="Delete data from a table",
-                inputSchema=self.crud_tool.get_delete_schema()
-            ))
+            tools.append(self.crud_tool.get_delete_tool())
             
             # Add schema tools
-            tools.append(Tool(
-                name="get_schema",
-                description="Get comprehensive database schema information",
-                inputSchema=self.schema_tool.get_schema_schema()
-            ))
+            tools.append(self.schema_tool.get_schema_tool())
             
-            tools.append(Tool(
-                name="get_tables",
-                description="Get list of tables with metadata",
-                inputSchema=self.schema_tool.get_tables_schema()
-            ))
+            tools.append(self.schema_tool.get_tables_tool())
             
-            tools.append(Tool(
-                name="get_table_schema",
-                description="Get detailed table schema information",
-                inputSchema=self.schema_tool.get_table_schema_schema()
-            ))
+            tools.append(self.schema_tool.get_table_schema_tool())
             
-            tools.append(Tool(
-                name="get_stored_procedures",
-                description="Get list of stored procedures",
-                inputSchema=self.schema_tool.get_procedures_schema()
-            ))
+            tools.append(self.schema_tool.get_stored_procedures_tool())
             
-            tools.append(Tool(
-                name="get_triggers",
-                description="Get list of triggers",
-                inputSchema=self.schema_tool.get_triggers_schema()
-            ))
+            tools.append(self.schema_tool.get_triggers_tool())
             
-            tools.append(Tool(
-                name="get_views",
-                description="Get list of views",
-                inputSchema=self.schema_tool.get_views_schema()
-            ))
+            tools.append(self.schema_tool.get_views_tool())
             
-            # Add stored procedure tool
-            tools.append(Tool(
-                name="execute_procedure",
-                description="Execute stored procedures with parameters",
-                inputSchema=self.sp_tool.get_input_schema()
-            ))
+            # Add stored procedure tools
+            tools.append(self.sp_tool.get_tool())
+            tools.append(self.sp_tool.get_procedure_info_tool())
             
             return tools
         
         @self.server.call_tool()
-        def call_tool(name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
+        async def call_tool(name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
             """Handle tool execution requests."""
             try:
-                import asyncio
                 if name == "execute_query":
-                    return asyncio.run(self.query_tool.execute_query(arguments))
+                    return await self.query_tool.execute(arguments)
                 elif name == "insert_data":
-                    return asyncio.run(self.crud_tool.insert_data(arguments))
+                    return await self.crud_tool.insert(arguments)
                 elif name == "update_data":
-                    return asyncio.run(self.crud_tool.update_data(arguments))
+                    return await self.crud_tool.update(arguments)
                 elif name == "delete_data":
-                    return asyncio.run(self.crud_tool.delete_data(arguments))
+                    return await self.crud_tool.delete(arguments)
                 elif name == "get_schema":
-                    return asyncio.run(self.schema_tool.get_schema(arguments))
+                    return await self.schema_tool.get_schema(arguments)
                 elif name == "get_tables":
-                    return asyncio.run(self.schema_tool.get_tables(arguments))
+                    return await self.schema_tool.get_tables(arguments)
                 elif name == "get_table_schema":
-                    return asyncio.run(self.schema_tool.get_table_schema(arguments))
+                    return await self.schema_tool.get_table_schema(arguments)
                 elif name == "get_stored_procedures":
-                    return asyncio.run(self.schema_tool.get_stored_procedures(arguments))
+                    return await self.schema_tool.get_stored_procedures(arguments)
                 elif name == "get_triggers":
-                    return asyncio.run(self.schema_tool.get_triggers(arguments))
+                    return await self.schema_tool.get_triggers(arguments)
                 elif name == "get_views":
-                    return asyncio.run(self.schema_tool.get_views(arguments))
+                    return await self.schema_tool.get_views(arguments)
                 elif name == "execute_procedure":
-                    return asyncio.run(self.sp_tool.execute_procedure(arguments))
+                    return await self.sp_tool.execute_procedure(arguments)
+                elif name == "get_procedure_info":
+                    return await self.sp_tool.get_procedure_info(arguments)
                 else:
                     return {
                         "error": f"Unknown tool: {name}",
                         "available_tools": [
                             "execute_query", "insert_data", "update_data", "delete_data",
                             "get_schema", "get_tables", "get_table_schema", "get_stored_procedures",
-                            "get_triggers", "get_views", "execute_procedure"
+                            "get_triggers", "get_views", "execute_procedure", "get_procedure_info"
                         ]
                     }
             except Exception as e:
@@ -199,39 +157,41 @@ class SSMSServer:
                 return {"error": f"Tool execution failed: {str(e)}"}
         
         @self.server.list_resources()
-        def list_resources() -> List[Resource]:
+        async def list_resources() -> List[Resource]:
             """List all available resources."""
             resources = []
             
             # Add table resources
-            import asyncio
-            resources.extend(asyncio.run(self.tables_resource.list_resources()))
+            resources.extend(self.tables_resource.get_resources())
             
             # Add procedure resources
-            resources.extend(asyncio.run(self.procedures_resource.list_resources()))
+            resources.extend(self.procedures_resource.get_resources())
             
             # Add trigger resources
-            resources.extend(asyncio.run(self.triggers_resource.list_resources()))
+            resources.extend(self.triggers_resource.get_resources())
             
             # Add view resources
-            resources.extend(asyncio.run(self.views_resource.list_resources()))
+            resources.extend(self.views_resource.get_resources())
             
             return resources
         
         @self.server.read_resource()
-        def read_resource(uri: str) -> str:
+        async def read_resource(uri: str) -> str:
             """Handle resource read requests."""
             try:
                 # Route to appropriate resource handler
-                import asyncio
                 if uri.startswith("ssms://master/tables/") or uri.startswith("ssms://datamgmt/tables/"):
-                    return asyncio.run(self.tables_resource.read_resource(uri))
+                    import json
+                    return json.dumps(await self.tables_resource.get_table_resource(uri))
                 elif uri.startswith("ssms://master/procedures/") or uri.startswith("ssms://datamgmt/procedures/"):
-                    return asyncio.run(self.procedures_resource.read_resource(uri))
+                    import json
+                    return json.dumps(await self.procedures_resource.get_procedure_resource(uri))
                 elif uri.startswith("ssms://master/triggers/") or uri.startswith("ssms://datamgmt/triggers/"):
-                    return asyncio.run(self.triggers_resource.read_resource(uri))
+                    import json
+                    return json.dumps(await self.triggers_resource.get_trigger_resource(uri))
                 elif uri.startswith("ssms://master/views/") or uri.startswith("ssms://datamgmt/views/"):
-                    return asyncio.run(self.views_resource.read_resource(uri))
+                    import json
+                    return json.dumps(await self.views_resource.get_view_resource(uri))
                 else:
                     return f"Unknown resource URI: {uri}"
             except Exception as e:

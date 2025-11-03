@@ -237,7 +237,7 @@ class MasterDatabase(BaseDatabase):
             SELECT 
                 t.name as trigger_name,
                 OBJECT_NAME(t.parent_id) as table_name,
-                SCHEMA_NAME(t.schema_id) as trigger_schema,
+                OBJECT_SCHEMA_NAME(t.object_id) as trigger_schema,
                 t.is_disabled as is_disabled,
                 t.is_not_for_replication as is_not_for_replication
             FROM sys.triggers t

@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "konaai-ssms": {
+      "command": "C:\\Program Files\\KonaAI_ML\\.pyenv\\pyenv-win\\shims\\python.bat",
+      "args": ["-u", "main.py"],
+      "cwd": "C:\\Users\\UdayChaitanyaGurvind\\Desktop\\KonaAi\\KonaAI Web Application\\KonaAI-SSMS-MCP\\mcp-server",
+      "env": {
+        "PYTHONPATH": ".",
+        "PYTHONUNBUFFERED": "1"
+      }
+    }
+  }
+}
+
+
+
+
+
