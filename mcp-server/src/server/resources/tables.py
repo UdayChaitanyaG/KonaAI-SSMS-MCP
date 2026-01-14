@@ -39,38 +39,63 @@ class TablesResource:
         """
         resources = []
         
+        # Get Master database tables
         try:
-            # Get Master database tables
+            logger.info("Fetching Master database tables for resources...")
             master_tables = self.master_db.get_tables()
+            logger.info(f"Found {len(master_tables)} tables in Master database")
+            
             for table in master_tables:
-                table_name = table['table_name']
-                schema_name = table['table_schema']
-                uri = f"ssms://master/tables/{schema_name}/{table_name}"
-                
-                resources.append(Resource(
-                    uri=uri,
-                    name=f"Master Table: {schema_name}.{table_name}",
-                    description=f"Table schema and metadata for {schema_name}.{table_name} in Master database",
-                    mimeType="application/json"
-                ))
-            
-            # Get Data Management database tables
-            data_mgmt_tables = self.data_mgmt_db.get_tables()
-            for table in data_mgmt_tables:
-                table_name = table['table_name']
-                schema_name = table['table_schema']
-                uri = f"ssms://datamgmt/tables/{schema_name}/{table_name}"
-                
-                resources.append(Resource(
-                    uri=uri,
-                    name=f"Data Management Table: {schema_name}.{table_name}",
-                    description=f"Table schema and metadata for {schema_name}.{table_name} in Data Management database",
-                    mimeType="application/json"
-                ))
-            
+                table_name = table.get('table_name', '')
+                schema_name = table.get('table_schema', 'dbo')
+                if table_name:
+                    uri = f"ssms://master/tables/{schema_name}/{table_name}"
+                    
+                    resources.append(Resource(
+                        uri=uri,
+                        name=f"Master Table: {schema_name}.{table_name}",
+                        description=f"Table schema and metadata for {schema_name}.{table_name} in Master database",
+                        mimeType="application/json"
+                    ))
         except Exception as e:
-            logger.error(f"Error getting table resources: {e}")
+            logger.error(f"Error getting Master database table resources: {e}", exc_info=True)
+            # Add a resource indicating the error
+            resources.append(Resource(
+                uri="ssms://master/tables/error",
+                name="Master Database Tables (Error)",
+                description=f"Error loading Master database tables: {str(e)}",
+                mimeType="text/plain"
+            ))
         
+        # Get Data Management database tables
+        try:
+            logger.info("Fetching Data Management database tables for resources...")
+            data_mgmt_tables = self.data_mgmt_db.get_tables()
+            logger.info(f"Found {len(data_mgmt_tables)} tables in Data Management database")
+            
+            for table in data_mgmt_tables:
+                table_name = table.get('table_name', '')
+                schema_name = table.get('table_schema', 'dbo')
+                if table_name:
+                    uri = f"ssms://datamgmt/tables/{schema_name}/{table_name}"
+                    
+                    resources.append(Resource(
+                        uri=uri,
+                        name=f"Data Management Table: {schema_name}.{table_name}",
+                        description=f"Table schema and metadata for {schema_name}.{table_name} in Data Management database",
+                        mimeType="application/json"
+                    ))
+        except Exception as e:
+            logger.error(f"Error getting Data Management database table resources: {e}", exc_info=True)
+            # Add a resource indicating the error
+            resources.append(Resource(
+                uri="ssms://datamgmt/tables/error",
+                name="Data Management Database Tables (Error)",
+                description=f"Error loading Data Management database tables: {str(e)}",
+                mimeType="text/plain"
+            ))
+        
+        logger.info(f"Returning {len(resources)} table resources")
         return resources
     
     async def get_table_resource(self, uri: str) -> Dict[str, Any]:

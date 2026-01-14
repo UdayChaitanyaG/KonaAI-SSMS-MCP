@@ -29,19 +29,23 @@ class DatabaseConfig(BaseSettings):
 
 
 class AppConfig(BaseSettings):
-    """Application configuration."""
+    """Application configuration.
+    
+    Reads from .env file or environment variables.
+    Defaults are provided but should be overridden via .env file.
+    """
     
     # Master Database Configuration
-    master_db_server: str = Field(default="DC-L-", description="Master DB server")
-    master_db_name: str = Field(default="KonaAI", description="Master database name")
-    master_db_user: str = Field(default="", description="Master DB username (empty for Windows Auth)")
-    master_db_password: str = Field(default="", description="Master DB password (empty for Windows Auth)")
+    master_db_server: str = Field(default="", description="Master DB server (from MASTER_DB_SERVER env var)")
+    master_db_name: str = Field(default="", description="Master database name (from MASTER_DB_NAME env var)")
+    master_db_user: str = Field(default="", description="Master DB username (from MASTER_DB_USER env var)")
+    master_db_password: str = Field(default="", description="Master DB password (from MASTER_DB_PASSWORD env var)")
     
     # Data Management Database Configuration
-    data_mgmt_db_server: str = Field(default="DC-L-", description="Data Management DB server")
-    data_mgmt_db_name: str = Field(default="DIT_GDB", description="Data Management database name")
-    data_mgmt_db_user: str = Field(default="", description="Data Management DB username (empty for Windows Auth)")
-    data_mgmt_db_password: str = Field(default="", description="Data Management DB password (empty for Windows Auth)")
+    data_mgmt_db_server: str = Field(default="", description="Data Management DB server (from DATA_MGMT_DB_SERVER env var)")
+    data_mgmt_db_name: str = Field(default="", description="Data Management database name (from DATA_MGMT_DB_NAME env var)")
+    data_mgmt_db_user: str = Field(default="", description="Data Management DB username (from DATA_MGMT_DB_USER env var)")
+    data_mgmt_db_password: str = Field(default="", description="Data Management DB password (from DATA_MGMT_DB_PASSWORD env var)")
     
     # Application Settings
     query_timeout: int = Field(default=30, description="Query timeout in seconds")
@@ -80,6 +84,39 @@ class AppConfig(BaseSettings):
         )
 
 
+def normalize_server_name(server: str) -> str:
+    """
+    Normalize SQL Server name to handle different formats.
+    
+    Handles:
+    - IP addresses: 192.168.1.100
+    - Server names: SERVERNAME
+    - Named instances: SERVERNAME\\INSTANCENAME or SERVERNAME/INSTANCENAME
+    - With port: SERVERNAME,PORT or SERVERNAME:PORT
+    
+    Args:
+        server: Server name in various formats
+        
+    Returns:
+        Normalized server name for connection string
+    """
+    if not server:
+        return server
+    
+    # Remove any protocol prefixes
+    server = server.replace("tcp:", "").replace("TCP:", "")
+    
+    # Handle port notation (convert : to ,)
+    if ":" in server and "," not in server:
+        server = server.replace(":", ",")
+    
+    # Normalize instance separator (both \ and / work, but \ is standard)
+    if "/" in server and "\\" not in server:
+        server = server.replace("/", "\\")
+    
+    return server
+
+
 def get_connection_string(db_config: DatabaseConfig) -> str:
     """
     Build SQL Server connection string from configuration.
@@ -90,11 +127,14 @@ def get_connection_string(db_config: DatabaseConfig) -> str:
     Returns:
         Connection string for pyodbc
     """
+    # Normalize server name
+    server = normalize_server_name(db_config.server)
+    
     # Use Windows Authentication if username is empty
     if not db_config.username or not db_config.password:
-        return (
+        conn_str = (
             f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-            f"SERVER={db_config.server};"
+            f"SERVER={server};"
             f"DATABASE={db_config.database};"
             f"Trusted_Connection=yes;"
             f"Encrypt={'yes' if db_config.encrypt else 'no'};"
@@ -103,18 +143,21 @@ def get_connection_string(db_config: DatabaseConfig) -> str:
         )
     else:
         # Use SQL Server Authentication
-        return (
+        # Don't add port explicitly - let SQL Server use default port or dynamic port
+        # Only add port if explicitly specified in server name (e.g., "localhost,1433")
+        conn_str = (
             f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-            f"SERVER={db_config.server};"
+            f"SERVER={server};"
             f"DATABASE={db_config.database};"
             f"UID={db_config.username};"
             f"PWD={db_config.password};"
-            f"PORT={db_config.port};"
             f"Encrypt={'yes' if db_config.encrypt else 'no'};"
             f"TrustServerCertificate={'yes' if db_config.trust_server_certificate else 'no'};"
             f"Connection Timeout={db_config.timeout};"
             f"Login Timeout={db_config.timeout};"
         )
+    
+    return conn_str
 
 
 # Global configuration instance

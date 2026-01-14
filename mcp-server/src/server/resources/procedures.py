@@ -39,38 +39,63 @@ class ProceduresResource:
         """
         resources = []
         
+        # Get Master database procedures
         try:
-            # Get Master database procedures
+            logger.info("Fetching Master database stored procedures for resources...")
             master_procedures = self.master_db.get_stored_procedures()
+            logger.info(f"Found {len(master_procedures)} stored procedures in Master database")
+            
             for proc in master_procedures:
-                proc_name = proc['routine_name']
-                schema_name = proc['routine_schema']
-                uri = f"ssms://master/procedures/{schema_name}/{proc_name}"
-                
-                resources.append(Resource(
-                    uri=uri,
-                    name=f"Master Procedure: {schema_name}.{proc_name}",
-                    description=f"Stored procedure definition and metadata for {schema_name}.{proc_name} in Master database",
-                    mimeType="application/json"
-                ))
-            
-            # Get Data Management database procedures
-            data_mgmt_procedures = self.data_mgmt_db.get_stored_procedures()
-            for proc in data_mgmt_procedures:
-                proc_name = proc['routine_name']
-                schema_name = proc['routine_schema']
-                uri = f"ssms://datamgmt/procedures/{schema_name}/{proc_name}"
-                
-                resources.append(Resource(
-                    uri=uri,
-                    name=f"Data Management Procedure: {schema_name}.{proc_name}",
-                    description=f"Stored procedure definition and metadata for {schema_name}.{proc_name} in Data Management database",
-                    mimeType="application/json"
-                ))
-            
+                proc_name = proc.get('routine_name', '')
+                schema_name = proc.get('routine_schema', 'dbo')
+                if proc_name:
+                    uri = f"ssms://master/procedures/{schema_name}/{proc_name}"
+                    
+                    resources.append(Resource(
+                        uri=uri,
+                        name=f"Master Procedure: {schema_name}.{proc_name}",
+                        description=f"Stored procedure definition and metadata for {schema_name}.{proc_name} in Master database",
+                        mimeType="application/json"
+                    ))
         except Exception as e:
-            logger.error(f"Error getting procedure resources: {e}")
+            logger.error(f"Error getting Master database procedure resources: {e}", exc_info=True)
+            # Add a resource indicating the error
+            resources.append(Resource(
+                uri="ssms://master/procedures/error",
+                name="Master Database Procedures (Error)",
+                description=f"Error loading Master database procedures: {str(e)}",
+                mimeType="text/plain"
+            ))
         
+        # Get Data Management database procedures
+        try:
+            logger.info("Fetching Data Management database stored procedures for resources...")
+            data_mgmt_procedures = self.data_mgmt_db.get_stored_procedures()
+            logger.info(f"Found {len(data_mgmt_procedures)} stored procedures in Data Management database")
+            
+            for proc in data_mgmt_procedures:
+                proc_name = proc.get('routine_name', '')
+                schema_name = proc.get('routine_schema', 'dbo')
+                if proc_name:
+                    uri = f"ssms://datamgmt/procedures/{schema_name}/{proc_name}"
+                    
+                    resources.append(Resource(
+                        uri=uri,
+                        name=f"Data Management Procedure: {schema_name}.{proc_name}",
+                        description=f"Stored procedure definition and metadata for {schema_name}.{proc_name} in Data Management database",
+                        mimeType="application/json"
+                    ))
+        except Exception as e:
+            logger.error(f"Error getting Data Management database procedure resources: {e}", exc_info=True)
+            # Add a resource indicating the error
+            resources.append(Resource(
+                uri="ssms://datamgmt/procedures/error",
+                name="Data Management Database Procedures (Error)",
+                description=f"Error loading Data Management database procedures: {str(e)}",
+                mimeType="text/plain"
+            ))
+        
+        logger.info(f"Returning {len(resources)} procedure resources")
         return resources
     
     async def get_procedure_resource(self, uri: str) -> Dict[str, Any]:

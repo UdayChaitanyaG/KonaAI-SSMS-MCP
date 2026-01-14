@@ -33,6 +33,7 @@ from .tools.query_tool import QueryTool
 from .tools.crud_tool import CrudTool
 from .tools.schema_tool import SchemaTool
 from .tools.sp_tool import StoredProcedureTool
+from .tools.alter_tool import AlterTool
 
 # Import resources
 from .resources.tables import TablesResource
@@ -66,6 +67,7 @@ class SSMSServer:
         self.crud_tool = CrudTool(self.master_db, self.datamgmt_db)
         self.schema_tool = SchemaTool(self.master_db, self.datamgmt_db)
         self.sp_tool = StoredProcedureTool(self.master_db, self.datamgmt_db)
+        self.alter_tool = AlterTool(self.master_db, self.datamgmt_db)
         
         # Initialize resources
         self.tables_resource = TablesResource(self.master_db, self.datamgmt_db)
@@ -76,7 +78,13 @@ class SSMSServer:
         # Register handlers
         self._register_handlers()
         
-        logger.info("SSMS MCP Server initialized successfully")
+        # Log tool count for debugging
+        try:
+            tool_count = 13  # Expected: 1 query + 3 CRUD + 6 schema + 2 SP + 1 ALTER
+            logger.info(f"SSMS MCP Server initialized successfully - {tool_count} tools should be available")
+        except Exception as e:
+            logger.warning(f"Could not log tool count: {e}")
+            logger.info("SSMS MCP Server initialized successfully")
     
     def _register_handlers(self):
         """Register MCP handlers for tools and resources."""
@@ -84,35 +92,58 @@ class SSMSServer:
         @self.server.list_tools()
         async def list_tools() -> List[Tool]:
             """List all available tools."""
+            logger.info("Listing all available tools...")
             tools = []
             
-            # Add query tool
-            tools.append(self.query_tool.get_tool())
+            try:
+                # Add query tool
+                logger.info("Adding query tool...")
+                tools.append(self.query_tool.get_tool())
+                logger.info("Query tool added successfully")
+            except Exception as e:
+                logger.error(f"Error adding query tool: {e}", exc_info=True)
             
-            # Add CRUD tools
-            tools.append(self.crud_tool.get_insert_tool())
+            try:
+                # Add CRUD tools
+                logger.info("Adding CRUD tools...")
+                tools.append(self.crud_tool.get_insert_tool())
+                tools.append(self.crud_tool.get_update_tool())
+                tools.append(self.crud_tool.get_delete_tool())
+                logger.info("CRUD tools added successfully")
+            except Exception as e:
+                logger.error(f"Error adding CRUD tools: {e}", exc_info=True)
             
-            tools.append(self.crud_tool.get_update_tool())
+            try:
+                # Add schema tools
+                logger.info("Adding schema tools...")
+                tools.append(self.schema_tool.get_schema_tool())
+                tools.append(self.schema_tool.get_tables_tool())
+                tools.append(self.schema_tool.get_table_schema_tool())
+                tools.append(self.schema_tool.get_stored_procedures_tool())
+                tools.append(self.schema_tool.get_triggers_tool())
+                tools.append(self.schema_tool.get_views_tool())
+                logger.info("Schema tools added successfully")
+            except Exception as e:
+                logger.error(f"Error adding schema tools: {e}", exc_info=True)
             
-            tools.append(self.crud_tool.get_delete_tool())
+            try:
+                # Add stored procedure tools
+                logger.info("Adding stored procedure tools...")
+                tools.append(self.sp_tool.get_tool())
+                tools.append(self.sp_tool.get_procedure_info_tool())
+                logger.info("Stored procedure tools added successfully")
+            except Exception as e:
+                logger.error(f"Error adding stored procedure tools: {e}", exc_info=True)
             
-            # Add schema tools
-            tools.append(self.schema_tool.get_schema_tool())
+            try:
+                # Add ALTER tool
+                logger.info("Adding ALTER tool...")
+                tools.append(self.alter_tool.get_alter_table_tool())
+                logger.info("ALTER tool added successfully")
+            except Exception as e:
+                logger.error(f"Error adding ALTER tool: {e}", exc_info=True)
             
-            tools.append(self.schema_tool.get_tables_tool())
-            
-            tools.append(self.schema_tool.get_table_schema_tool())
-            
-            tools.append(self.schema_tool.get_stored_procedures_tool())
-            
-            tools.append(self.schema_tool.get_triggers_tool())
-            
-            tools.append(self.schema_tool.get_views_tool())
-            
-            # Add stored procedure tools
-            tools.append(self.sp_tool.get_tool())
-            tools.append(self.sp_tool.get_procedure_info_tool())
-            
+            logger.info(f"Total tools registered: {len(tools)}")
             return tools
         
         @self.server.call_tool()
@@ -143,13 +174,16 @@ class SSMSServer:
                     return await self.sp_tool.execute_procedure(arguments)
                 elif name == "get_procedure_info":
                     return await self.sp_tool.get_procedure_info(arguments)
+                elif name == "alter_table":
+                    return await self.alter_tool.alter_table(arguments)
                 else:
                     return {
                         "error": f"Unknown tool: {name}",
                         "available_tools": [
                             "execute_query", "insert_data", "update_data", "delete_data",
                             "get_schema", "get_tables", "get_table_schema", "get_stored_procedures",
-                            "get_triggers", "get_views", "execute_procedure", "get_procedure_info"
+                            "get_triggers", "get_views", "execute_procedure", "get_procedure_info",
+                            "alter_table"
                         ]
                     }
             except Exception as e:
@@ -159,20 +193,46 @@ class SSMSServer:
         @self.server.list_resources()
         async def list_resources() -> List[Resource]:
             """List all available resources."""
+            logger.info("Listing all available resources...")
             resources = []
             
-            # Add table resources
-            resources.extend(self.tables_resource.get_resources())
+            try:
+                # Add table resources
+                logger.info("Fetching table resources...")
+                table_resources = self.tables_resource.get_resources()
+                resources.extend(table_resources)
+                logger.info(f"Added {len(table_resources)} table resources")
+            except Exception as e:
+                logger.error(f"Error getting table resources: {e}", exc_info=True)
             
-            # Add procedure resources
-            resources.extend(self.procedures_resource.get_resources())
+            try:
+                # Add procedure resources
+                logger.info("Fetching procedure resources...")
+                procedure_resources = self.procedures_resource.get_resources()
+                resources.extend(procedure_resources)
+                logger.info(f"Added {len(procedure_resources)} procedure resources")
+            except Exception as e:
+                logger.error(f"Error getting procedure resources: {e}", exc_info=True)
             
-            # Add trigger resources
-            resources.extend(self.triggers_resource.get_resources())
+            try:
+                # Add trigger resources
+                logger.info("Fetching trigger resources...")
+                trigger_resources = self.triggers_resource.get_resources()
+                resources.extend(trigger_resources)
+                logger.info(f"Added {len(trigger_resources)} trigger resources")
+            except Exception as e:
+                logger.error(f"Error getting trigger resources: {e}", exc_info=True)
             
-            # Add view resources
-            resources.extend(self.views_resource.get_resources())
+            try:
+                # Add view resources
+                logger.info("Fetching view resources...")
+                view_resources = self.views_resource.get_resources()
+                resources.extend(view_resources)
+                logger.info(f"Added {len(view_resources)} view resources")
+            except Exception as e:
+                logger.error(f"Error getting view resources: {e}", exc_info=True)
             
+            logger.info(f"Total resources available: {len(resources)}")
             return resources
         
         @self.server.read_resource()

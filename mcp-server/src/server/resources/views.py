@@ -39,38 +39,63 @@ class ViewsResource:
         """
         resources = []
         
+        # Get Master database views
         try:
-            # Get Master database views
+            logger.info("Fetching Master database views for resources...")
             master_views = self.master_db.get_views()
+            logger.info(f"Found {len(master_views)} views in Master database")
+            
             for view in master_views:
-                view_name = view['table_name']
-                schema_name = view['table_schema']
-                uri = f"ssms://master/views/{schema_name}/{view_name}"
-                
-                resources.append(Resource(
-                    uri=uri,
-                    name=f"Master View: {schema_name}.{view_name}",
-                    description=f"View definition and metadata for {schema_name}.{view_name} in Master database",
-                    mimeType="application/json"
-                ))
-            
-            # Get Data Management database views
-            data_mgmt_views = self.data_mgmt_db.get_views()
-            for view in data_mgmt_views:
-                view_name = view['table_name']
-                schema_name = view['table_schema']
-                uri = f"ssms://datamgmt/views/{schema_name}/{view_name}"
-                
-                resources.append(Resource(
-                    uri=uri,
-                    name=f"Data Management View: {schema_name}.{view_name}",
-                    description=f"View definition and metadata for {schema_name}.{view_name} in Data Management database",
-                    mimeType="application/json"
-                ))
-            
+                view_name = view.get('table_name', '')
+                schema_name = view.get('table_schema', 'dbo')
+                if view_name:
+                    uri = f"ssms://master/views/{schema_name}/{view_name}"
+                    
+                    resources.append(Resource(
+                        uri=uri,
+                        name=f"Master View: {schema_name}.{view_name}",
+                        description=f"View definition and metadata for {schema_name}.{view_name} in Master database",
+                        mimeType="application/json"
+                    ))
         except Exception as e:
-            logger.error(f"Error getting view resources: {e}")
+            logger.error(f"Error getting Master database view resources: {e}", exc_info=True)
+            # Add a resource indicating the error
+            resources.append(Resource(
+                uri="ssms://master/views/error",
+                name="Master Database Views (Error)",
+                description=f"Error loading Master database views: {str(e)}",
+                mimeType="text/plain"
+            ))
         
+        # Get Data Management database views
+        try:
+            logger.info("Fetching Data Management database views for resources...")
+            data_mgmt_views = self.data_mgmt_db.get_views()
+            logger.info(f"Found {len(data_mgmt_views)} views in Data Management database")
+            
+            for view in data_mgmt_views:
+                view_name = view.get('table_name', '')
+                schema_name = view.get('table_schema', 'dbo')
+                if view_name:
+                    uri = f"ssms://datamgmt/views/{schema_name}/{view_name}"
+                    
+                    resources.append(Resource(
+                        uri=uri,
+                        name=f"Data Management View: {schema_name}.{view_name}",
+                        description=f"View definition and metadata for {schema_name}.{view_name} in Data Management database",
+                        mimeType="application/json"
+                    ))
+        except Exception as e:
+            logger.error(f"Error getting Data Management database view resources: {e}", exc_info=True)
+            # Add a resource indicating the error
+            resources.append(Resource(
+                uri="ssms://datamgmt/views/error",
+                name="Data Management Database Views (Error)",
+                description=f"Error loading Data Management database views: {str(e)}",
+                mimeType="text/plain"
+            ))
+        
+        logger.info(f"Returning {len(resources)} view resources")
         return resources
     
     async def get_view_resource(self, uri: str) -> Dict[str, Any]:

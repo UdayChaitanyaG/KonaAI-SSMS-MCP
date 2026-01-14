@@ -39,36 +39,61 @@ class TriggersResource:
         """
         resources = []
         
+        # Get Master database triggers
         try:
-            # Get Master database triggers
+            logger.info("Fetching Master database triggers for resources...")
             master_triggers = self.master_db.get_triggers()
+            logger.info(f"Found {len(master_triggers)} triggers in Master database")
+            
             for trigger in master_triggers:
-                trigger_name = trigger['trigger_name']
-                uri = f"ssms://master/triggers/{trigger_name}"
-                
-                resources.append(Resource(
-                    uri=uri,
-                    name=f"Master Trigger: {trigger_name}",
-                    description=f"Trigger definition and metadata for {trigger_name} in Master database",
-                    mimeType="application/json"
-                ))
-            
-            # Get Data Management database triggers
-            data_mgmt_triggers = self.data_mgmt_db.get_triggers()
-            for trigger in data_mgmt_triggers:
-                trigger_name = trigger['trigger_name']
-                uri = f"ssms://datamgmt/triggers/{trigger_name}"
-                
-                resources.append(Resource(
-                    uri=uri,
-                    name=f"Data Management Trigger: {trigger_name}",
-                    description=f"Trigger definition and metadata for {trigger_name} in Data Management database",
-                    mimeType="application/json"
-                ))
-            
+                trigger_name = trigger.get('trigger_name', '')
+                if trigger_name:
+                    uri = f"ssms://master/triggers/{trigger_name}"
+                    
+                    resources.append(Resource(
+                        uri=uri,
+                        name=f"Master Trigger: {trigger_name}",
+                        description=f"Trigger definition and metadata for {trigger_name} in Master database",
+                        mimeType="application/json"
+                    ))
         except Exception as e:
-            logger.error(f"Error getting trigger resources: {e}")
+            logger.error(f"Error getting Master database trigger resources: {e}", exc_info=True)
+            # Add a resource indicating the error
+            resources.append(Resource(
+                uri="ssms://master/triggers/error",
+                name="Master Database Triggers (Error)",
+                description=f"Error loading Master database triggers: {str(e)}",
+                mimeType="text/plain"
+            ))
         
+        # Get Data Management database triggers
+        try:
+            logger.info("Fetching Data Management database triggers for resources...")
+            data_mgmt_triggers = self.data_mgmt_db.get_triggers()
+            logger.info(f"Found {len(data_mgmt_triggers)} triggers in Data Management database")
+            
+            for trigger in data_mgmt_triggers:
+                trigger_name = trigger.get('trigger_name', '')
+                if trigger_name:
+                    uri = f"ssms://datamgmt/triggers/{trigger_name}"
+                    
+                    resources.append(Resource(
+                        uri=uri,
+                        name=f"Data Management Trigger: {trigger_name}",
+                        description=f"Trigger definition and metadata for {trigger_name} in Data Management database",
+                        mimeType="application/json"
+                    ))
+        except Exception as e:
+            logger.error(f"Error getting Data Management database trigger resources: {e}", exc_info=True)
+            # Add a resource indicating the error
+            resources.append(Resource(
+                uri="ssms://datamgmt/triggers/error",
+                name="Data Management Database Triggers (Error)",
+                description=f"Error loading Data Management database triggers: {str(e)}",
+                mimeType="text/plain"
+            ))
+        
+        logger.info(f"Returning {len(resources)} trigger resources")
         return resources
     
     async def get_trigger_resource(self, uri: str) -> Dict[str, Any]:

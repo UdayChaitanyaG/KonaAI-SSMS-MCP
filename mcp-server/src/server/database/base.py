@@ -78,8 +78,46 @@ class BaseDatabase:
             return connection
             
         except pyodbc.Error as e:
+            error_msg = str(e)
             logger.error(f"Failed to connect to database: {e}")
-            raise DatabaseConnectionError(f"Failed to connect to database: {e}")
+            
+            # Provide helpful error messages
+            helpful_msg = f"Failed to connect to database: {error_msg}"
+            
+            # Add troubleshooting hints based on error
+            if "53" in error_msg or "not found" in error_msg.lower() or "not accessible" in error_msg.lower():
+                helpful_msg += (
+                    f"\n\nTroubleshooting:\n"
+                    f"1. Verify server name '{self.db_config.server}' is correct\n"
+                    f"2. Check if SQL Server is running and accessible\n"
+                    f"3. Verify network connectivity to the server\n"
+                    f"4. Check if SQL Server allows remote connections\n"
+                    f"5. Try different server name formats:\n"
+                    f"   - IP address: 192.168.1.100\n"
+                    f"   - Server name: SERVERNAME\n"
+                    f"   - Named instance: SERVERNAME\\INSTANCENAME\n"
+                    f"   - With port: SERVERNAME,1433\n"
+                    f"6. Check firewall settings\n"
+                    f"7. Verify SQL Server Browser service is running (for named instances)"
+                )
+            elif "login" in error_msg.lower() or "authentication" in error_msg.lower():
+                helpful_msg += (
+                    f"\n\nTroubleshooting:\n"
+                    f"1. Verify username '{self.db_config.username}' is correct\n"
+                    f"2. Verify password is correct\n"
+                    f"3. Check if SQL Server Authentication is enabled\n"
+                    f"4. Verify user has access to database '{self.db_config.database}'"
+                )
+            elif "timeout" in error_msg.lower():
+                helpful_msg += (
+                    f"\n\nTroubleshooting:\n"
+                    f"1. Increase connection timeout (current: {self.db_config.timeout}s)\n"
+                    f"2. Check network latency\n"
+                    f"3. Verify SQL Server is responding\n"
+                    f"4. Check firewall rules"
+                )
+            
+            raise DatabaseConnectionError(helpful_msg)
     
     def _return_connection(self, connection: Connection):
         """
