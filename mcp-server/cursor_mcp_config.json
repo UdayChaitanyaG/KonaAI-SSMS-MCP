@@ -1,18 +1,16 @@
 {
   "mcpServers": {
     "konaai-ssms": {
-      "command": "C:\\Program Files\\KonaAI_ML\\.pyenv\\pyenv-win\\shims\\python.bat",
-      "args": ["-u", "main.py"],
-      "cwd": "C:\\Users\\UdayChaitanyaGurvind\\Desktop\\KonaAi\\KonaAI Web Application\\KonaAI-SSMS-MCP\\mcp-server",
+      "command": "C:\\Users\\Uday Chaitanya G\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+      "args": [
+        "-u",
+        "C:/Users/Uday Chaitanya G/source/repos/KonaAI WorkSpace/KonaAI-SSMS-MCP/mcp-server/main.py"
+      ],
+      "cwd": "C:/Users/Uday Chaitanya G/source/repos/KonaAI WorkSpace/KonaAI-SSMS-MCP/mcp-server",
       "env": {
-        "PYTHONPATH": ".",
+        "PYTHONPATH": "C:/Users/Uday Chaitanya G/source/repos/KonaAI WorkSpace/KonaAI-SSMS-MCP/mcp-server",
         "PYTHONUNBUFFERED": "1"
       }
     }
   }
 }
-
-
-
-
-
